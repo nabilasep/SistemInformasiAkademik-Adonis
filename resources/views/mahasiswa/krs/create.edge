@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tambah Mata Kuliah - KRS Mahasiswa</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .sidebar {
+      min-height: 100vh;
+      background-color: #0d6efd;
+    }
+    .sidebar .nav-link {
+      color: rgba(255,255,255,0.8);
+    }
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+      color: #fff;
+      background-color: rgba(255,255,255,0.1);
+    }
+    .matakuliah-card {
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .matakuliah-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .matakuliah-card.selected {
+      border: 2px solid #0d6efd;
+      background-color: #e3f2fd;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <nav class="col-md-3 col-lg-2 sidebar p-0">
+        <div class="position-sticky pt-3">
+          <div class="text-center mb-4">
+            <h5 class="text-white">ASEP University</h5>
+            <small class="text-white-50">Dashboard Mahasiswa</small>
+          </div>
+          
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('mahasiswa.dashboard') }}">
+                <i class="fas fa-tachometer-alt me-2"></i>
+                Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="{{ route('mahasiswa.krs.index') }}">
+                <i class="fas fa-list-alt me-2"></i>
+                KRS
+              </a>
+            </li>
+          </ul>
+          
+          <hr class="text-white-50">
+          
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                {{ csrfField() }}
+                <button type="submit" class="nav-link btn btn-link text-start w-100 border-0">
+                  <i class="fas fa-sign-out-alt me-2"></i>
+                  Logout
+                </button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="pt-3 pb-2 mb-3 border-bottom">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h1 class="h2">Tambah Mata Kuliah</h1>
+              <p class="text-muted">Pilih mata kuliah untuk semester {{ currentSemester }}</p>
+            </div>
+            <a href="{{ route('mahasiswa.krs.index') }}" class="btn btn-outline-secondary">
+              <i class="fas fa-arrow-left me-2"></i>
+              Kembali ke KRS
+            </a>
+          </div>
+        </div>        <!-- Flash Messages -->
+        @if(flashMessages.has('success'))
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ flashMessages.get('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        @endif
+
+        @if(flashMessages.has('errors'))
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ flashMessages.get('errors.general') || 'Terjadi kesalahan' }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        @endif
+
+        @if(error)
+          <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            {{ error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        @endif
+
+        <!-- Current SKS Info -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card bg-light">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-8">
+                    <h6 class="card-title">Informasi SKS Anda</h6>
+                    <div class="row">
+                      <div class="col-4">
+                        <div class="text-center">
+                          <h4 class="text-primary">{{ currentSks || 0 }}</h4>
+                          <small class="text-muted">SKS Saat Ini</small>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <div class="text-center">
+                          <h4 class="text-success">{{ (maxSks || 24) - (currentSks || 0) }}</h4>
+                          <small class="text-muted">Sisa Kuota</small>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <div class="text-center">
+                          <h4 class="text-info">{{ maxSks || 24 }}</h4>
+                          <small class="text-muted">Maksimal</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>                  <div class="col-md-4">
+                    <div class="progress mb-2" style="height: 25px;">
+                      <div class="progress-bar {{ (currentSks && currentSks / maxSks * 100) > 80 ? 'bg-warning' : 'bg-primary' }}" 
+                           role="progressbar" 
+                           style="width: {{ currentSks ? (currentSks / maxSks * 100) : 0 }}%">
+                        {{ currentSks || 0 }}/{{ maxSks || 24 }}
+                      </div>
+                    </div>
+                    <small class="text-muted">Progress SKS semester ini</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="row">
+          <div class="col-12">
+            <form action="{{ route('mahasiswa.krs.store') }}" method="POST" id="krsForm">
+              {{ csrfField() }}
+              
+              <div class="card shadow">
+                <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary">Pilih Mata Kuliah</h6>
+                </div>
+                <div class="card-body">
+                  @if(availableMatakuliah && availableMatakuliah.length > 0)
+                    <div class="row">
+                      @each(matakuliah in availableMatakuliah)
+                        <div class="col-lg-6 col-xl-4 mb-3">
+                          <div class="card matakuliah-card h-100" onclick="selectMatakuliah({{ matakuliah.id }}, this)">
+                            <div class="card-body">
+                              <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title mb-0">{{ matakuliah.namaMatakuliah }}</h6>
+                                <span class="badge bg-warning">{{ matakuliah.sks }} SKS</span>
+                              </div>
+                              <p class="card-text">
+                                <small class="text-muted">Kode: {{ matakuliah.kode }}</small>
+                              </p>
+                              <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">{{ matakuliah.sks }} SKS</small>
+                                <div class="form-check">
+                                  <input class="form-check-input" type="radio" name="matakuliahId" 
+                                         value="{{ matakuliah.id }}" id="mk{{ matakuliah.id }}">
+                                  <label class="form-check-label" for="mk{{ matakuliah.id }}">
+                                    Pilih
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      @endeach
+                    </div>
+
+                    <!-- Selected Info -->
+                    <div id="selectedInfo" class="alert alert-info d-none">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                          <strong>Mata kuliah terpilih:</strong>
+                          <span id="selectedName"></span>
+                          <br>
+                          <small>
+                            Kode: <span id="selectedCode"></span> | 
+                            SKS: <span id="selectedSks"></span> |
+                            Total SKS setelah ditambah: <span id="totalAfter"></span>
+                          </small>
+                        </div>
+                        <button type="button" class="btn-close" onclick="clearSelection()"></button>
+                      </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-flex justify-content-between">
+                      <a href="{{ route('mahasiswa.krs.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>
+                        Batal
+                      </a>
+                      <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                        <i class="fas fa-plus me-2"></i>
+                        Tambah ke KRS
+                      </button>
+                    </div>
+                  @else
+                    <div class="text-center py-5">
+                      <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
+                      <h5 class="text-muted">Tidak ada mata kuliah tersedia</h5>
+                      <p class="text-muted">Semua mata kuliah sudah diambil atau belum ada data mata kuliah.</p>
+                      <a href="{{ route('mahasiswa.krs.index') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Kembali ke KRS
+                      </a>
+                    </div>
+                  @endif
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Help Card -->
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-info">Panduan</h6>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <h6>Cara Menambah Mata Kuliah:</h6>
+                    <ol class="small">
+                      <li>Pilih mata kuliah yang ingin diambil</li>
+                      <li>Perhatikan jumlah SKS yang akan ditambah</li>
+                      <li>Pastikan total SKS tidak melebihi 24</li>
+                      <li>Klik "Tambah ke KRS"</li>
+                    </ol>
+                  </div>
+                  <div class="col-md-6">
+                    <h6>Informasi Penting:</h6>
+                    <ul class="small">
+                      <li>Batas maksimal: 24 SKS per semester</li>
+                      <li>Tidak bisa mengambil mata kuliah yang sama dua kali</li>
+                      <li>Pastikan tidak ada jadwal yang bentrok</li>
+                      <li>KRS dapat diubah hingga batas waktu yang ditentukan</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const currentSks = {{ currentSks || 0 }};
+    const maxSks = {{ maxSks || 24 }};
+    let selectedMatakuliah = null;
+
+    function selectMatakuliah(id, cardElement) {
+      // Clear previous selection
+      document.querySelectorAll('.matakuliah-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      
+      document.querySelectorAll('input[name="matakuliahId"]').forEach(radio => {
+        radio.checked = false;
+      });
+
+      // Select current
+      cardElement.classList.add('selected');
+      const radio = document.getElementById('mk' + id);
+      radio.checked = true;
+
+      // Get mata kuliah data
+      const title = cardElement.querySelector('.card-title').textContent;
+      const codeElement = cardElement.querySelector('.text-muted');
+      const code = codeElement.textContent.replace('Kode: ', '');
+      const sksElement = cardElement.querySelector('.badge');
+      const sks = parseInt(sksElement.textContent.replace(' SKS', ''));
+
+      selectedMatakuliah = { id, title, code, sks };
+
+      // Show selected info
+      const selectedInfo = document.getElementById('selectedInfo');
+      document.getElementById('selectedName').textContent = title;
+      document.getElementById('selectedCode').textContent = code;
+      document.getElementById('selectedSks').textContent = sks + ' SKS';
+      document.getElementById('totalAfter').textContent = (currentSks + sks) + ' SKS';
+      
+      selectedInfo.classList.remove('d-none');
+
+      // Enable submit button if within SKS limit
+      const submitBtn = document.getElementById('submitBtn');
+      if (currentSks + sks <= maxSks) {
+        submitBtn.disabled = false;
+        selectedInfo.className = 'alert alert-success';
+      } else {
+        submitBtn.disabled = true;
+        selectedInfo.className = 'alert alert-danger';
+        selectedInfo.querySelector('div').innerHTML += '<br><small class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>Melebihi batas maksimal SKS!</small>';
+      }
+    }
+
+    function clearSelection() {
+      document.querySelectorAll('.matakuliah-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      
+      document.querySelectorAll('input[name="matakuliahId"]').forEach(radio => {
+        radio.checked = false;
+      });
+
+      document.getElementById('selectedInfo').classList.add('d-none');
+      document.getElementById('submitBtn').disabled = true;
+      selectedMatakuliah = null;
+    }
+
+    // Form validation
+    document.getElementById('krsForm').addEventListener('submit', function(e) {
+      if (!selectedMatakuliah) {
+        e.preventDefault();
+        alert('Silakan pilih mata kuliah terlebih dahulu!');
+        return false;
+      }
+
+      if (currentSks + selectedMatakuliah.sks > maxSks) {
+        e.preventDefault();
+        alert('Total SKS akan melebihi batas maksimal (' + maxSks + ' SKS)!');
+        return false;
+      }
+
+      return confirm('Yakin ingin menambah mata kuliah "' + selectedMatakuliah.title + '" ke KRS?');
+    });
+  </script>
+</body>
+</html>

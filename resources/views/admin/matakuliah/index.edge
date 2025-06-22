@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daftar Mata Kuliah - Admin Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .sidebar {
+      min-height: 100vh;
+      background-color: #343a40;
+    }
+    .sidebar .nav-link {
+      color: #adb5bd;
+    }
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+      color: #fff;
+      background-color: #495057;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <nav class="col-md-3 col-lg-2 sidebar p-0">
+        <div class="position-sticky pt-3">
+          <div class="text-center mb-4">
+            <h5 class="text-white">ASEP University</h5>
+            <small class="text-muted">Dashboard Admin</small>
+          </div>
+          
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.dashboard') }}">
+                <i class="fas fa-tachometer-alt me-2"></i>
+                Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.fakultas.index') }}">
+                <i class="fas fa-university me-2"></i>
+                Fakultas
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.prodi.index') }}">
+                <i class="fas fa-graduation-cap me-2"></i>
+                Program Studi
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.mahasiswa.index') }}">
+                <i class="fas fa-users me-2"></i>
+                Mahasiswa
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="{{ route('admin.matakuliah.index') }}">
+                <i class="fas fa-book me-2"></i>
+                Mata Kuliah
+              </a>
+            </li>
+          </ul>
+          
+          <hr class="text-muted">
+          
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                {{ csrfField() }}
+                <button type="submit" class="nav-link btn btn-link text-start w-100 border-0">
+                  <i class="fas fa-sign-out-alt me-2"></i>
+                  Logout
+                </button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="pt-3 pb-2 mb-3 border-bottom d-flex justify-content-between align-items-center">
+          <div>
+            <h1 class="h2">Daftar Mata Kuliah</h1>
+            <p class="text-muted">Kelola data mata kuliah di universitas</p>
+          </div>
+          <a href="{{ route('admin.matakuliah.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>
+            Tambah Mata Kuliah
+          </a>
+        </div>
+
+        <!-- Flash Messages -->
+        @if(flashMessages.has('success'))
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ flashMessages.get('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        @endif
+
+        @if(flashMessages.has('errors'))
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ flashMessages.get('errors.general') || 'Terjadi kesalahan' }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        @endif
+
+        <!-- Mata Kuliah Table -->
+        <div class="card shadow">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Daftar Mata Kuliah</h6>
+          </div>
+          <div class="card-body">
+            @if(matakuliahs && matakuliahs.length > 0)
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>No</th>
+                      <th>Kode</th>
+                      <th>Nama Mata Kuliah</th>
+                      <th>SKS</th>
+                      <th>Tanggal Dibuat</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @each((matakuliah, index) in matakuliahs)
+                      <tr>
+                        <td>{{ index + 1 }}</td>
+                        <td>
+                          <span class="badge bg-primary">{{ matakuliah.kode || 'N/A' }}</span>
+                        </td>
+                        <td>{{ matakuliah.namaMatakuliah || 'N/A' }}</td>
+                        <td>
+                          <span class="badge bg-info">
+                            {{ matakuliah.sks || 0 }} SKS
+                          </span>
+                        </td>
+                        <td>{{ matakuliah.createdAt?.toFormat('dd/MM/yyyy') || 'N/A' }}</td>
+                        <td>
+                          <div class="btn-group" role="group">
+                            <a href="{{ route('admin.matakuliah.show', { id: matakuliah.id }) }}" 
+                               class="btn btn-sm btn-outline-info" title="Lihat Detail">
+                              <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ route('admin.matakuliah.edit', { id: matakuliah.id }) }}" 
+                               class="btn btn-sm btn-outline-warning" title="Edit">
+                              <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="{{ route('admin.matakuliah.destroy', { id: matakuliah.id }) }}" 
+                                  method="POST" class="d-inline"
+                                  onsubmit="return confirm('Yakin ingin menghapus mata kuliah ini?')">
+                              {{ csrfField() }}
+                              <input type="hidden" name="_method" value="DELETE">
+                              <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                              </button>
+                            </form>
+                          </div>
+                        </td>
+                      </tr>
+                    @endeach
+                  </tbody>
+                </table>
+              </div>
+            @else
+              <div class="text-center py-5">
+                <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Belum ada mata kuliah</h5>
+                <p class="text-muted">Silakan tambah mata kuliah baru untuk memulai.</p>
+                <a href="{{ route('admin.matakuliah.create') }}" class="btn btn-primary">
+                  <i class="fas fa-plus me-2"></i>
+                  Tambah Mata Kuliah
+                </a>
+              </div>
+            @endif
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

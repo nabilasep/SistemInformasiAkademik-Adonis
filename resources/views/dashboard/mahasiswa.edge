@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Mahasiswa - Sistem Akademik ASEP</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .sidebar {
+      min-height: 100vh;
+      background-color: #0d6efd;
+    }
+    .sidebar .nav-link {
+      color: rgba(255,255,255,0.8);
+    }
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+      color: #fff;
+      background-color: rgba(255,255,255,0.1);
+    }
+    .stats-card {
+      transition: transform 0.2s;
+    }
+    .stats-card:hover {
+      transform: translateY(-2px);
+    }
+    .semester-card {
+      border-left: 4px solid #0d6efd;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <nav class="col-md-3 col-lg-2 sidebar p-0">
+        <div class="position-sticky pt-3">
+          <div class="text-center mb-4">
+            <h5 class="text-white">ASEP University</h5>
+            <small class="text-white-50">Dashboard Mahasiswa</small>
+          </div>
+          
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link active" href="{{ route('mahasiswa.dashboard') }}">
+                <i class="fas fa-tachometer-alt me-2"></i>
+                Dashboard
+              </a>
+            </li>            <li class="nav-item">
+              <a class="nav-link" href="{{ route('mahasiswa.krs.index') }}">
+                <i class="fas fa-list-alt me-2"></i>
+                KRS
+              </a>
+            </li>
+          </ul>
+          
+          <hr class="text-white-50">
+          
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                {{ csrfField() }}
+                <button type="submit" class="nav-link btn btn-link text-start w-100 border-0">
+                  <i class="fas fa-sign-out-alt me-2"></i>
+                  Logout
+                </button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="pt-3 pb-2 mb-3 border-bottom">
+          <h1 class="h2">Dashboard Mahasiswa</h1>
+          <p class="text-muted">Selamat datang, {{ mahasiswa.nama }}</p>
+        </div>
+
+        <!-- Flash Messages -->
+        @if(error)
+          <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            {{ error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        @endif
+
+        <!-- Profile Info -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-8">
+                    <h5 class="card-title">Informasi Mahasiswa</h5>
+                    <table class="table table-borderless">
+                      <tr>
+                        <td width="150">NIM</td>
+                        <td>: {{ mahasiswa.nim }}</td>
+                      </tr>
+                      <tr>
+                        <td>Nama</td>
+                        <td>: {{ mahasiswa.nama }}</td>
+                      </tr>
+                      <tr>
+                        <td>Program Studi</td>
+                        <td>: {{ mahasiswa.prodi.namaProdi }}</td>
+                      </tr>
+                      <tr>
+                        <td>Fakultas</td>
+                        <td>: {{ mahasiswa.prodi.fakultas.namaFakultas }}</td>
+                      </tr>
+                    </table>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="text-center">
+                      <i class="fas fa-user-circle fa-5x text-muted mb-3"></i>
+                      <div class="fw-bold">{{ mahasiswa.nama }}</div>
+                      <div class="text-muted">{{ mahasiswa.nim }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Academic Statistics -->
+        <div class="row mb-4">
+          <div class="col-xl-4 col-md-6 mb-3">
+            <div class="card stats-card border-left-primary shadow h-100 py-2">
+              <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                  <div class="col mr-2">
+                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                      Total SKS Diambil
+                    </div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ totalSksAmbil }}</div>
+                  </div>
+                  <div class="col-auto">
+                    <i class="fas fa-graduation-cap fa-2x text-gray-300"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-4 col-md-6 mb-3">
+            <div class="card stats-card border-left-success shadow h-100 py-2">
+              <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                  <div class="col mr-2">
+                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                      Total Mata Kuliah
+                    </div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ totalMatakuliahAmbil }}</div>
+                  </div>
+                  <div class="col-auto">
+                    <i class="fas fa-book fa-2x text-gray-300"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-4 col-md-6 mb-3">
+            <div class="card stats-card border-left-info shadow h-100 py-2">
+              <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                  <div class="col mr-2">
+                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                      Total Semester
+                    </div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ totalSemester }}</div>
+                  </div>
+                  <div class="col-auto">
+                    <i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Current Semester Info -->
+        @if(currentKrs.items.length > 0)
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card semester-card">
+              <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Semester Aktif: {{ currentSemester }}</h6>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-2">
+                      <strong>Total SKS:</strong> {{ currentKrs.totalSks }}
+                    </div>
+                    <div class="mb-2">
+                      <strong>Total Mata Kuliah:</strong> {{ currentKrs.totalMatakuliah }}
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="progress mb-2">
+                      <div class="progress-bar" role="progressbar" 
+                           style="width: {{ (currentKrs.totalSks / 24 * 100) }}%">
+                        {{ currentKrs.totalSks }}/24 SKS
+                      </div>
+                    </div>
+                    <small class="text-muted">Batas maksimal: 24 SKS per semester</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        @endif
+
+        <!-- KRS by Semester -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card shadow">
+              <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Riwayat KRS per Semester</h6>
+              </div>
+              <div class="card-body">
+                @if(Object.keys(krsBySemester).length > 0)
+                  <div class="accordion" id="semesterAccordion">
+                    @each((semester, index) in semesterList)
+                      <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{ index }}">
+                          <button class="accordion-button {{ index === 0 ? '' : 'collapsed' }}" 
+                                  type="button" data-bs-toggle="collapse" 
+                                  data-bs-target="#collapse{{ index }}">
+                            <div class="d-flex justify-content-between w-100 me-3">
+                              <span><strong>Semester {{ semester }}</strong></span>
+                              <span class="text-muted">
+                                {{ krsBySemester[semester]?.totalMatakuliah || 0 }} Mata Kuliah | 
+                                {{ krsBySemester[semester]?.totalSks || 0 }} SKS
+                              </span>
+                            </div>
+                          </button>
+                        </h2>
+                        <div id="collapse{{ index }}" 
+                             class="accordion-collapse collapse {{ index === 0 ? 'show' : '' }}" 
+                             data-bs-parent="#semesterAccordion">
+                          <div class="accordion-body">
+                            @if(krsBySemester[semester] && krsBySemester[semester].items && krsBySemester[semester].items.length > 0)
+                              <div class="table-responsive">
+                                <table class="table table-striped">
+                                  <thead>
+                                    <tr>
+                                      <th>Kode</th>
+                                      <th>Mata Kuliah</th>
+                                      <th>SKS</th>
+                                      <th>Tanggal Ambil</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    @each(krs in krsBySemester[semester].items)
+                                      <tr>
+                                        <td>{{ krs.matakuliah?.kode || 'N/A' }}</td>
+                                        <td>{{ krs.matakuliah?.namaMatakuliah || 'N/A' }}</td>
+                                        <td>{{ krs.matakuliah?.sks || 0 }}</td>
+                                        <td>{{ krs.createdAt?.toFormat('dd/MM/yyyy') || 'N/A' }}</td>
+                                      </tr>
+                                    @endeach
+                                  </tbody>
+                                </table>
+                              </div>
+                            @else
+                              <p class="text-muted mb-0">Tidak ada mata kuliah di semester {{ semester }}</p>
+                            @endif
+                          </div>
+                        </div>
+                      </div>
+                    @endeach
+                  </div>
+                @else
+                  <div class="text-center py-5">
+                    <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Belum ada KRS</h5>
+                    <p class="text-muted">Anda belum mengambil mata kuliah apapun.</p>                    <a href="{{ route('mahasiswa.krs.index') }}" class="btn btn-primary">
+                      <i class="fas fa-plus me-2"></i>
+                      Ambil KRS
+                    </a>
+                  </div>
+                @endif
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

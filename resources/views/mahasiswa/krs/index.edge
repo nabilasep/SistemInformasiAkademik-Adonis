@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KRS Mahasiswa - Sistem Akademik ASEP</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .sidebar {
+      min-height: 100vh;
+      background-color: #0d6efd;
+    }
+    .sidebar .nav-link {
+      color: rgba(255,255,255,0.8);
+    }
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+      color: #fff;
+      background-color: rgba(255,255,255,0.1);
+    }
+    .sks-progress {
+      border-left: 4px solid #0d6efd;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <nav class="col-md-3 col-lg-2 sidebar p-0">
+        <div class="position-sticky pt-3">
+          <div class="text-center mb-4">
+            <h5 class="text-white">ASEP University</h5>
+            <small class="text-white-50">Dashboard Mahasiswa</small>
+          </div>
+          
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('mahasiswa.dashboard') }}">
+                <i class="fas fa-tachometer-alt me-2"></i>
+                Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="{{ route('mahasiswa.krs.index') }}">
+                <i class="fas fa-list-alt me-2"></i>
+                KRS
+              </a>
+            </li>
+          </ul>
+          
+          <hr class="text-white-50">
+          
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                {{ csrfField() }}
+                <button type="submit" class="nav-link btn btn-link text-start w-100 border-0">
+                  <i class="fas fa-sign-out-alt me-2"></i>
+                  Logout
+                </button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="pt-3 pb-2 mb-3 border-bottom d-flex justify-content-between align-items-center">
+          <div>
+            <h1 class="h2">Kartu Rencana Studi (KRS)</h1>
+            <p class="text-muted">Semester {{ currentSemester }} - {{ mahasiswa?.nama || user.email }}</p>
+          </div>          <div class="btn-group" role="group">
+            <a href="{{ route('mahasiswa.krs.create') }}" class="btn btn-primary">
+              <i class="fas fa-plus me-2"></i>
+              Tambah Mata Kuliah
+            </a>
+          </div>
+        </div>        <!-- Flash Messages -->
+        @if(flashMessages.has('success'))
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ flashMessages.get('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        @endif
+
+        @if(flashMessages.has('errors'))
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ flashMessages.get('errors.general') || 'Terjadi kesalahan' }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        @endif
+
+        @if(error)
+          <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            {{ error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        @endif
+
+        <!-- SKS Progress Card -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card sks-progress">
+              <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Progress SKS Semester {{ currentSemester }}</h6>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-2">
+                      <strong>Total SKS Diambil:</strong> {{ currentSks || 0 }} / {{ maxSks || 24 }}
+                    </div>
+                    <div class="mb-2">
+                      <strong>Total Mata Kuliah:</strong> {{ currentKrs.length || 0 }}
+                    </div>
+                    <div class="mb-2">
+                      <strong>Sisa Kuota SKS:</strong> {{ (maxSks || 24) - (currentSks || 0) }}
+                    </div>
+                  </div>                  <div class="col-md-6">
+                    <div class="progress mb-2" style="height: 25px;">
+                      <div class="progress-bar {{ (currentSks && currentSks / maxSks * 100) > 80 ? 'bg-warning' : 'bg-primary' }}" 
+                           role="progressbar" 
+                           style="width: {{ currentSks ? (currentSks / maxSks * 100) : 0 }}%">
+                        {{ currentSks || 0 }}/{{ maxSks || 24 }} SKS
+                      </div>
+                    </div>
+                    <small class="text-muted">
+                      @if((currentSks && currentSks / maxSks * 100) > 80)
+                        <i class="fas fa-exclamation-triangle text-warning me-1"></i>
+                        Mendekati batas maksimal
+                      @else
+                        <i class="fas fa-check-circle text-success me-1"></i>
+                        Dalam batas normal
+                      @endif
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Current KRS Table -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card shadow">
+              <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Mata Kuliah yang Diambil</h6>
+                @if(currentKrs && currentKrs.length > 0)
+                  <span class="badge bg-info">{{ currentKrs.length }} Mata Kuliah</span>
+                @endif
+              </div>
+              <div class="card-body">
+                @if(currentKrs && currentKrs.length > 0)
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th>No</th>
+                          <th>Kode</th>
+                          <th>Nama Mata Kuliah</th>
+                          <th>SKS</th>
+                          <th>Tanggal Ambil</th>
+                          <th>Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @each((krs, index) in currentKrs)
+                          <tr>
+                            <td>{{ index + 1 }}</td>
+                            <td>
+                              <span class="badge bg-primary">{{ krs.matakuliah?.kode || 'N/A' }}</span>
+                            </td>
+                            <td>
+                              <strong>{{ krs.matakuliah?.namaMatakuliah || 'N/A' }}</strong>
+                            </td>
+                            <td>
+                              <span class="badge bg-warning">{{ krs.matakuliah?.sks || 0 }} SKS</span>
+                            </td>
+                            <td>{{ krs.createdAt?.toFormat('dd/MM/yyyy HH:mm') || 'N/A' }}</td>
+                            <td>
+                              <form action="{{ route('mahasiswa.krs.destroy', { id: krs.id }) }}" 
+                                    method="POST" class="d-inline"
+                                    onsubmit="return confirm('Yakin ingin menghapus mata kuliah {{ krs.matakuliah?.namaMatakuliah }} dari KRS?')">
+                                {{ csrfField() }}
+                                <input type="hidden" name="_method" value="DELETE">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus dari KRS">
+                                  <i class="fas fa-trash"></i>
+                                </button>
+                              </form>
+                            </td>
+                          </tr>
+                        @endeach
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Summary Card -->
+                  <div class="mt-4">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="card bg-light">
+                          <div class="card-body">
+                            <h6 class="card-title">Ringkasan Semester {{ currentSemester }}</h6>
+                            <div class="row">
+                              <div class="col-6">
+                                <div class="text-center">
+                                  <h4 class="text-primary">{{ currentKrs.length }}</h4>
+                                  <small class="text-muted">Mata Kuliah</small>
+                                </div>
+                              </div>
+                              <div class="col-6">
+                                <div class="text-center">
+                                  <h4 class="text-success">{{ currentSks }} SKS</h4>
+                                  <small class="text-muted">Total SKS</small>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="card bg-light">
+                          <div class="card-body">
+                            <h6 class="card-title">Informasi Penting</h6>
+                            <ul class="list-unstyled mb-0">
+                              <li><i class="fas fa-info-circle text-info me-2"></i>Batas maksimal: 24 SKS per semester</li>
+                              <li><i class="fas fa-clock text-warning me-2"></i>Pastikan jadwal tidak bentrok</li>
+                              <li><i class="fas fa-check text-success me-2"></i>KRS dapat diubah hingga batas waktu</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                @else
+                  <div class="text-center py-5">
+                    <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Belum ada mata kuliah yang diambil</h5>
+                    <p class="text-muted">Silakan tambah mata kuliah untuk semester {{ currentSemester }}.</p>
+                    <a href="{{ route('mahasiswa.krs.create') }}" class="btn btn-primary">
+                      <i class="fas fa-plus me-2"></i>
+                      Tambah Mata Kuliah Pertama
+                    </a>
+                  </div>
+                @endif
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Available Mata Kuliah Preview -->
+        @if(availableMatakuliah && availableMatakuliah.length > 0)
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-success">Mata Kuliah Tersedia</h6>
+              </div>
+              <div class="card-body">
+                <p class="text-muted">Masih ada {{ availableMatakuliah.length }} mata kuliah yang bisa diambil.</p>
+                <div class="row">
+                  @each((matakuliah, index) in availableMatakuliah.slice(0, 6))
+                    <div class="col-md-4 mb-2">
+                      <div class="d-flex justify-content-between">
+                        <span>{{ matakuliah.namaMatakuliah }}</span>
+                        <span class="badge bg-secondary">{{ matakuliah.sks }} SKS</span>
+                      </div>
+                    </div>
+                  @endeach
+                </div>
+                @if(availableMatakuliah.length > 6)
+                  <div class="text-center mt-3">
+                    <small class="text-muted">Dan {{ availableMatakuliah.length - 6 }} mata kuliah lainnya...</small>
+                  </div>
+                @endif
+                <div class="text-center mt-3">
+                  <a href="{{ route('mahasiswa.krs.create') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Lihat Semua & Tambah
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        @endif
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

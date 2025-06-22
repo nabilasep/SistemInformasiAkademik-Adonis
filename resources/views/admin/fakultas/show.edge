@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Fakultas - Admin Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .sidebar {
+      min-height: 100vh;
+      background-color: #343a40;
+    }
+    .sidebar .nav-link {
+      color: #adb5bd;
+    }
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+      color: #fff;
+      background-color: #495057;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <nav class="col-md-3 col-lg-2 sidebar p-0">
+        <div class="position-sticky pt-3">
+          <div class="text-center mb-4">
+            <h5 class="text-white">ASEP University</h5>
+            <small class="text-muted">Dashboard Admin</small>
+          </div>
+          
+          <ul class="nav flex-column">            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.dashboard') }}">
+                <i class="fas fa-tachometer-alt me-2"></i>
+                Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="{{ route('admin.fakultas.index') }}">
+                <i class="fas fa-university me-2"></i>
+                Fakultas
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.prodi.index') }}">
+                <i class="fas fa-graduation-cap me-2"></i>
+                Program Studi
+              </a>
+            </li>
+          </ul>
+          
+          <hr class="text-muted">
+          
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                {{ csrfField() }}
+                <button type="submit" class="nav-link btn btn-link text-start w-100 border-0">
+                  <i class="fas fa-sign-out-alt me-2"></i>
+                  Logout
+                </button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="pt-3 pb-2 mb-3 border-bottom">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h1 class="h2">Detail Fakultas</h1>
+              <p class="text-muted">Informasi lengkap fakultas: {{ fakultas.namaFakultas }}</p>
+            </div>
+            <div class="btn-group" role="group">
+              <a href="{{ route('admin.fakultas.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Kembali
+              </a>
+              <a href="{{ route('admin.fakultas.edit', { id: fakultas.id }) }}" class="btn btn-warning">
+                <i class="fas fa-edit me-2"></i>
+                Edit
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- Fakultas Info -->
+          <div class="col-lg-6">
+            <div class="card shadow mb-4">
+              <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Informasi Fakultas</h6>
+              </div>
+              <div class="card-body">
+                <table class="table table-borderless">
+                  <tr>
+                    <td width="150"><strong>ID Fakultas:</strong></td>
+                    <td>{{ fakultas.id }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Nama Fakultas:</strong></td>
+                    <td>{{ fakultas.namaFakultas }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Tanggal Dibuat:</strong></td>
+                    <td>{{ fakultas.createdAt.toFormat('dd MMMM yyyy, HH:mm') }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Terakhir Diperbarui:</strong></td>
+                    <td>{{ fakultas.updatedAt.toFormat('dd MMMM yyyy, HH:mm') }}</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Statistics -->
+          <div class="col-lg-6">
+            <div class="card shadow mb-4">
+              <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Statistik</h6>
+              </div>
+              <div class="card-body">
+                <div class="row text-center">
+                  <div class="col-6">
+                    <div class="border-end">
+                      <h4 class="text-primary">{{ fakultas.prodis ? fakultas.prodis.length : 0 }}</h4>
+                      <small class="text-muted">Program Studi</small>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <h4 class="text-success">{{ totalMahasiswa || 0 }}</h4>
+                    <small class="text-muted">Total Mahasiswa</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Program Studi List -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card shadow">
+              <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Daftar Program Studi</h6>
+                <span class="badge bg-info">{{ fakultas.prodis ? fakultas.prodis.length : 0 }} Prodi</span>
+              </div>
+              <div class="card-body">
+                @if(fakultas.prodis && fakultas.prodis.length > 0)
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th>No</th>
+                          <th>Nama Program Studi</th>
+                          <th>Jumlah Mahasiswa</th>
+                          <th>Tanggal Dibuat</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @each((prodi, index) in fakultas.prodis)
+                          <tr>
+                            <td>{{ index + 1 }}</td>
+                            <td>{{ prodi.namaProdi }}</td>
+                            <td>
+                              <span class="badge bg-success">
+                                {{ prodi.mahasiswas ? prodi.mahasiswas.length : 0 }} Mahasiswa
+                              </span>
+                            </td>
+                            <td>{{ prodi.createdAt.toFormat('dd/MM/yyyy') }}</td>
+                          </tr>
+                        @endeach
+                      </tbody>
+                    </table>
+                  </div>
+                @else
+                  <div class="text-center py-4">
+                    <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+                    <h6 class="text-muted">Belum ada program studi</h6>
+                    <p class="text-muted">Fakultas ini belum memiliki program studi.</p>
+                  </div>
+                @endif
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

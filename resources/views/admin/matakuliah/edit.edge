@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Mata Kuliah - Admin Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .sidebar {
+      min-height: 100vh;
+      background-color: #343a40;
+    }
+    .sidebar .nav-link {
+      color: #adb5bd;
+    }
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+      color: #fff;
+      background-color: #495057;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <nav class="col-md-3 col-lg-2 sidebar p-0">
+        <div class="position-sticky pt-3">
+          <div class="text-center mb-4">
+            <h5 class="text-white">ASEP University</h5>
+            <small class="text-muted">Dashboard Admin</small>
+          </div>
+          
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.dashboard') }}">
+                <i class="fas fa-tachometer-alt me-2"></i>
+                Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.fakultas.index') }}">
+                <i class="fas fa-university me-2"></i>
+                Fakultas
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.prodi.index') }}">
+                <i class="fas fa-graduation-cap me-2"></i>
+                Program Studi
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.mahasiswa.index') }}">
+                <i class="fas fa-users me-2"></i>
+                Mahasiswa
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="{{ route('admin.matakuliah.index') }}">
+                <i class="fas fa-book me-2"></i>
+                Mata Kuliah
+              </a>
+            </li>
+          </ul>
+          
+          <hr class="text-muted">
+          
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                {{ csrfField() }}
+                <button type="submit" class="nav-link btn btn-link text-start w-100 border-0">
+                  <i class="fas fa-sign-out-alt me-2"></i>
+                  Logout
+                </button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="pt-3 pb-2 mb-3 border-bottom">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h1 class="h2">Edit Mata Kuliah</h1>
+              <p class="text-muted">Ubah data mata kuliah: {{ matakuliah?.namaMatakuliah || 'N/A' }}</p>
+            </div>
+            <a href="{{ route('admin.matakuliah.index') }}" class="btn btn-outline-secondary">
+              <i class="fas fa-arrow-left me-2"></i>
+              Kembali
+            </a>
+          </div>
+        </div>
+
+        <!-- Flash Messages -->
+        @if(flashMessages.has('errors'))
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @if(flashMessages.get('errors.general'))
+              {{ flashMessages.get('errors.general') }}
+            @endif
+            @if(flashMessages.get('errors.kode'))
+              <div>Kode: {{ flashMessages.get('errors.kode') }}</div>
+            @endif
+            @if(flashMessages.get('errors.sks'))
+              <div>SKS: {{ flashMessages.get('errors.sks') }}</div>
+            @endif
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        @endif
+
+        <!-- Form -->
+        <div class="row">
+          <div class="col-lg-8">
+            <div class="card shadow">
+              <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Form Edit Mata Kuliah</h6>
+              </div>
+              <div class="card-body">
+                <form action="{{ route('admin.matakuliah.update', { id: matakuliah?.id || 0 }) }}" method="POST">
+                  {{ csrfField() }}
+                  <input type="hidden" name="_method" value="PUT">
+                  
+                  <div class="row">
+                    <div class="col-md-4 mb-3">
+                      <label for="kode" class="form-label fw-semibold">
+                        Kode Mata Kuliah <span class="text-danger">*</span>
+                      </label>
+                      <input 
+                        type="text" 
+                        class="form-control @if(flashMessages.has('errors.kode')) is-invalid @endif" 
+                        id="kode" 
+                        name="kode" 
+                        value="{{ old('kode', matakuliah?.kode) }}"
+                        placeholder="Contoh: TIF101"
+                        required
+                      >
+                      @if(flashMessages.has('errors.kode'))
+                        <div class="invalid-feedback">
+                          {{ flashMessages.get('errors.kode') }}
+                        </div>
+                      @endif
+                      <small class="text-muted">Kode unik mata kuliah</small>
+                    </div>
+
+                    <div class="col-md-8 mb-3">
+                      <label for="namaMatakuliah" class="form-label fw-semibold">
+                        Nama Mata Kuliah <span class="text-danger">*</span>
+                      </label>
+                      <input 
+                        type="text" 
+                        class="form-control @if(flashMessages.has('errors.namaMatakuliah')) is-invalid @endif" 
+                        id="namaMatakuliah" 
+                        name="namaMatakuliah" 
+                        value="{{ old('namaMatakuliah', matakuliah?.namaMatakuliah) }}"
+                        placeholder="Contoh: Pemrograman Web"
+                        required
+                      >
+                      @if(flashMessages.has('errors.namaMatakuliah'))
+                        <div class="invalid-feedback">
+                          {{ flashMessages.get('errors.namaMatakuliah') }}
+                        </div>
+                      @endif
+                      <small class="text-muted">Nama lengkap mata kuliah</small>
+                    </div>
+                  </div>
+
+                  <div class="mb-4">
+                    <label for="sks" class="form-label fw-semibold">
+                      Jumlah SKS <span class="text-danger">*</span>
+                    </label>
+                    <select 
+                      class="form-select @if(flashMessages.has('errors.sks')) is-invalid @endif" 
+                      id="sks" 
+                      name="sks" 
+                      required
+                    >
+                      <option value="">-- Pilih Jumlah SKS --</option>
+                      <option value="1" {{ (old('sks') || matakuliah?.sks) == 1 ? 'selected' : '' }}>1 SKS</option>
+                      <option value="2" {{ (old('sks') || matakuliah?.sks) == 2 ? 'selected' : '' }}>2 SKS</option>
+                      <option value="3" {{ (old('sks') || matakuliah?.sks) == 3 ? 'selected' : '' }}>3 SKS</option>
+                      <option value="4" {{ (old('sks') || matakuliah?.sks) == 4 ? 'selected' : '' }}>4 SKS</option>
+                      <option value="5" {{ (old('sks') || matakuliah?.sks) == 5 ? 'selected' : '' }}>5 SKS</option>
+                      <option value="6" {{ (old('sks') || matakuliah?.sks) == 6 ? 'selected' : '' }}>6 SKS</option>
+                    </select>
+                    @if(flashMessages.has('errors.sks'))
+                      <div class="invalid-feedback">
+                        {{ flashMessages.get('errors.sks') }}
+                      </div>
+                    @endif
+                    <small class="text-muted">Pilih jumlah SKS antara 1-6</small>
+                  </div>
+
+                  <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary">
+                      <i class="fas fa-save me-2"></i>
+                      Update Mata Kuliah
+                    </button>
+                    <a href="{{ route('admin.matakuliah.index') }}" class="btn btn-secondary">
+                      <i class="fas fa-times me-2"></i>
+                      Batal
+                    </a>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Info Panel -->
+          <div class="col-lg-4">
+            <div class="card">
+              <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-info">Informasi Mata Kuliah</h6>
+              </div>
+              <div class="card-body">
+                <table class="table table-borderless table-sm">
+                  <tr>
+                    <td><strong>ID:</strong></td>
+                    <td>{{ matakuliah?.id || 'N/A' }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Kode Saat Ini:</strong></td>
+                    <td>{{ matakuliah?.kode || 'N/A' }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>SKS Saat Ini:</strong></td>
+                    <td>{{ matakuliah?.sks || 0 }} SKS</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Dibuat:</strong></td>
+                    <td>{{ matakuliah?.createdAt?.toFormat('dd/MM/yyyy HH:mm') || 'N/A' }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Diperbarui:</strong></td>
+                    <td>{{ matakuliah?.updatedAt?.toFormat('dd/MM/yyyy HH:mm') || 'N/A' }}</td>
+                  </tr>
+                </table>
+                
+                <div class="alert alert-warning">
+                  <small>
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Perhatian:</strong> Mengubah data mata kuliah dapat mempengaruhi KRS mahasiswa yang sudah mengambil mata kuliah ini.
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

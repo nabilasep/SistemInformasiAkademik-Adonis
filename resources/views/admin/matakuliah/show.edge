@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Mata Kuliah - Admin Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .sidebar {
+      min-height: 100vh;
+      background-color: #343a40;
+    }
+    .sidebar .nav-link {
+      color: #adb5bd;
+    }
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+      color: #fff;
+      background-color: #495057;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <nav class="col-md-3 col-lg-2 sidebar p-0">
+        <div class="position-sticky pt-3">
+          <div class="text-center mb-4">
+            <h5 class="text-white">ASEP University</h5>
+            <small class="text-muted">Dashboard Admin</small>
+          </div>
+          
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.dashboard') }}">
+                <i class="fas fa-tachometer-alt me-2"></i>
+                Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.fakultas.index') }}">
+                <i class="fas fa-university me-2"></i>
+                Fakultas
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.prodi.index') }}">
+                <i class="fas fa-graduation-cap me-2"></i>
+                Program Studi
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.mahasiswa.index') }}">
+                <i class="fas fa-users me-2"></i>
+                Mahasiswa
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="{{ route('admin.matakuliah.index') }}">
+                <i class="fas fa-book me-2"></i>
+                Mata Kuliah
+              </a>
+            </li>
+          </ul>
+          
+          <hr class="text-muted">
+          
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                {{ csrfField() }}
+                <button type="submit" class="nav-link btn btn-link text-start w-100 border-0">
+                  <i class="fas fa-sign-out-alt me-2"></i>
+                  Logout
+                </button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="pt-3 pb-2 mb-3 border-bottom">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h1 class="h2">Detail Mata Kuliah</h1>
+              <p class="text-muted">Informasi lengkap mata kuliah: {{ matakuliah?.namaMatakuliah || 'N/A' }}</p>
+            </div>
+            <div class="btn-group" role="group">
+              <a href="{{ route('admin.matakuliah.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Kembali
+              </a>
+              <a href="{{ route('admin.matakuliah.edit', { id: matakuliah?.id || 0 }) }}" class="btn btn-warning">
+                <i class="fas fa-edit me-2"></i>
+                Edit
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- Mata Kuliah Info -->
+          <div class="col-lg-6">
+            <div class="card shadow mb-4">
+              <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Informasi Mata Kuliah</h6>
+              </div>
+              <div class="card-body">
+                <div class="text-center mb-4">
+                  <div class="avatar-placeholder bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
+                    {{ matakuliah?.kode?.charAt(0)?.toUpperCase() || 'M' }}
+                  </div>
+                  <h4 class="mt-3 mb-1">{{ matakuliah?.namaMatakuliah || 'N/A' }}</h4>
+                  <p class="text-muted">{{ matakuliah?.kode || 'N/A' }}</p>
+                </div>
+
+                <table class="table table-borderless">
+                  <tr>
+                    <td width="150"><strong>ID Mata Kuliah:</strong></td>
+                    <td>{{ matakuliah?.id || 'N/A' }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Kode:</strong></td>
+                    <td>
+                      <span class="badge bg-primary fs-6">{{ matakuliah?.kode || 'N/A' }}</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>Nama Mata Kuliah:</strong></td>
+                    <td>{{ matakuliah?.namaMatakuliah || 'N/A' }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Jumlah SKS:</strong></td>
+                    <td>
+                      <span class="badge bg-info fs-6">
+                        {{ matakuliah?.sks || 0 }} SKS
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>Tanggal Dibuat:</strong></td>
+                    <td>{{ matakuliah?.createdAt?.toFormat('dd MMMM yyyy, HH:mm') || 'N/A' }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Terakhir Diperbarui:</strong></td>
+                    <td>{{ matakuliah?.updatedAt?.toFormat('dd MMMM yyyy, HH:mm') || 'N/A' }}</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Academic Info -->
+          <div class="col-lg-6">
+            <div class="card shadow mb-4">
+              <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Statistik Mata Kuliah</h6>
+              </div>
+              <div class="card-body">
+                <div class="row text-center mb-4">
+                  <div class="col-4">
+                    <div class="border-end">
+                      <h4 class="text-info">{{ totalMahasiswa || 0 }}</h4>
+                      <small class="text-muted">Mahasiswa Terdaftar</small>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div class="border-end">
+                      <h4 class="text-warning">{{ matakuliah?.sks || 0 }}</h4>
+                      <small class="text-muted">Total SKS</small>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <h4 class="text-success">Aktif</h4>
+                    <small class="text-muted">Status</small>
+                  </div>
+                </div>
+                
+                <hr>
+                
+                <div class="mb-3">
+                  <h6>Kategori Mata Kuliah</h6>
+                  <span class="badge bg-success fs-6">Mata Kuliah Regular</span>
+                </div>
+
+                <div class="mb-3">
+                  <h6>Tingkat Kesulitan</h6>
+                  <div class="progress">
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: 60%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
+                      Menengah
+                    </div>
+                  </div>
+                  <small class="text-muted">Berdasarkan jumlah SKS: {{ matakuliah?.sks || 0 }}</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+              <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-success">Quick Actions</h6>
+              </div>
+              <div class="card-body">
+                <div class="d-grid gap-2">
+                  <a href="{{ route('admin.matakuliah.edit', { id: matakuliah?.id || 0 }) }}" class="btn btn-warning btn-sm">
+                    <i class="fas fa-edit me-2"></i>
+                    Edit Data Mata Kuliah
+                  </a>
+                  <button class="btn btn-info btn-sm" disabled>
+                    <i class="fas fa-users me-2"></i>
+                    Lihat Mahasiswa (Coming Soon)
+                  </button>
+                  <button class="btn btn-secondary btn-sm" disabled>
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Statistik Nilai (Coming Soon)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Info -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card shadow">
+              <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Mahasiswa yang Mengambil Mata Kuliah</h6>
+                <span class="badge bg-info">Coming Soon</span>
+              </div>
+              <div class="card-body">
+                <div class="text-center py-4">
+                  <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                  <h6 class="text-muted">Daftar Mahasiswa</h6>
+                  <p class="text-muted">Fitur untuk melihat mahasiswa yang mengambil mata kuliah ini sedang dalam pengembangan.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

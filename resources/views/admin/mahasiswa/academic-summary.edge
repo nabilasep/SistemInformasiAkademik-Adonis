@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ringkasan Akademik Mahasiswa - Admin Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; }
+    .sidebar { min-height: 100vh; background-color: #343a40; }
+    .sidebar .nav-link { color: #adb5bd; }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background-color: #495057; }
+    .progress-sm { height: 8px; }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <nav class="col-md-3 col-lg-2 sidebar p-0">
+        <div class="position-sticky pt-3">
+          <div class="text-center mb-4">
+            <h5 class="text-white">ASEP University</h5>
+            <small class="text-muted">Dashboard Admin</small>
+          </div>
+          
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.dashboard') }}">
+                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.fakultas.index') }}">
+                <i class="fas fa-university me-2"></i>Fakultas
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.prodi.index') }}">
+                <i class="fas fa-graduation-cap me-2"></i>Program Studi
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.mahasiswa.index') }}">
+                <i class="fas fa-users me-2"></i>Mahasiswa
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="{{ route('admin.mahasiswa.academic-summary') }}">
+                <i class="fas fa-chart-bar me-2"></i>Ringkasan Akademik
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('admin.matakuliah.index') }}">
+                <i class="fas fa-book me-2"></i>Mata Kuliah
+              </a>
+            </li>
+          </ul>
+          
+          <hr class="text-muted">
+          
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                {{ csrfField() }}
+                <button type="submit" class="nav-link btn btn-link text-start w-100 border-0">
+                  <i class="fas fa-sign-out-alt me-2"></i>Logout
+                </button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="pt-3 pb-2 mb-3 border-bottom d-flex justify-content-between align-items-center">
+          <div>
+            <h1 class="h2">Ringkasan Akademik Mahasiswa</h1>
+            <p class="text-muted">Analisis SKS dan aktivitas akademik per semester</p>
+          </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+          <div class="col-xl-4 col-md-6 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+              <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                  <div class="col mr-2">
+                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                      Total Mahasiswa
+                    </div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.totalMahasiswa }}</div>
+                  </div>
+                  <div class="col-auto">
+                    <i class="fas fa-users fa-2x text-gray-300"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-4 col-md-6 mb-3">
+            <div class="card border-left-success shadow h-100 py-2">
+              <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                  <div class="col mr-2">
+                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                      Total SKS Diambil
+                    </div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.totalSksAllMahasiswa }}</div>
+                  </div>
+                  <div class="col-auto">
+                    <i class="fas fa-graduation-cap fa-2x text-gray-300"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-4 col-md-6 mb-3">
+            <div class="card border-left-info shadow h-100 py-2">
+              <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                  <div class="col mr-2">
+                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                      Rata-rata SKS
+                    </div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.avgSksPerMahasiswa }}</div>
+                  </div>
+                  <div class="col-auto">
+                    <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-info">Filter & Pencarian</h6>
+              </div>
+              <div class="card-body">
+                <form method="GET" action="{{ route('admin.mahasiswa.academic-summary') }}">
+                  <div class="row">
+                    <div class="col-md-4 mb-3">
+                      <label for="search" class="form-label">Cari Mahasiswa</label>
+                      <input type="text" class="form-control" id="search" name="search" 
+                             value="{{ filters.search }}" 
+                             placeholder="Nama atau NIM mahasiswa...">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                      <label for="semester" class="form-label">Semester</label>
+                      <select class="form-select" id="semester" name="semester">
+                        <option value="">-- Semua Semester --</option>
+                        @if(semesterList && semesterList.length > 0)
+                          @each(semesterItem in semesterList)
+                            <option value="{{ semesterItem.semester }}" 
+                              {{ filters.semester == semesterItem.semester ? 'selected' : '' }}>
+                              Semester {{ semesterItem.semester }}
+                            </option>
+                          @endeach
+                        @endif
+                      </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                      <label for="fakultasId" class="form-label">Fakultas</label>
+                      <select class="form-select" id="fakultasId" name="fakultasId">
+                        <option value="">-- Semua Fakultas --</option>
+                        @if(fakultasList && fakultasList.length > 0)
+                          @each(fakultas in fakultasList)
+                            <option value="{{ fakultas.id }}" 
+                              {{ filters.fakultasId == fakultas.id ? 'selected' : '' }}>
+                              {{ fakultas.namaFakultas }}
+                            </option>
+                          @endeach
+                        @endif
+                      </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                      <label class="form-label">&nbsp;</label>
+                      <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                          <i class="fas fa-search me-1"></i> Filter
+                        </button>
+                        <a href="{{ route('admin.mahasiswa.academic-summary') }}" class="btn btn-outline-secondary btn-sm">
+                          Reset
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mahasiswa Academic Table -->
+        <div class="card shadow">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+              Ringkasan Akademik - Semester {{ currentSemester }}
+            </h6>
+          </div>
+          <div class="card-body">
+            @if(mahasiswaWithSks && mahasiswaWithSks.length > 0)
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Ranking</th>
+                      <th>NIM</th>
+                      <th>Nama Mahasiswa</th>
+                      <th>Program Studi</th>
+                      <th>Total SKS</th>
+                      <th>Mata Kuliah</th>
+                      <th>Progress</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @each((mahasiswa, index) in mahasiswaWithSks)
+                      <tr>
+                        <td>
+                          @if(index < 3)
+                            <span class="badge bg-warning">#{{ index + 1 }}</span>
+                          @else
+                            {{ index + 1 }}
+                          @endif
+                        </td>
+                        <td>
+                          <strong>{{ mahasiswa.nim }}</strong>
+                        </td>
+                        <td>{{ mahasiswa.nama }}</td>
+                        <td>
+                          <small class="text-muted">
+                            {{ mahasiswa.prodi?.namaProdi }}<br>
+                            {{ mahasiswa.prodi?.fakultas?.namaFakultas }}
+                          </small>
+                        </td>
+                        <td>
+                          <span class="badge bg-{{ mahasiswa.totalSks > 20 ? 'success' : mahasiswa.totalSks > 15 ? 'warning' : 'secondary' }} fs-6">
+                            {{ mahasiswa.totalSks }} SKS
+                          </span>
+                        </td>
+                        <td>
+                          <span class="badge bg-info">{{ mahasiswa.totalMatakuliah }} MK</span>
+                        </td>
+                        <td>
+                          <div class="progress progress-sm">
+                            <div class="progress-bar {{ mahasiswa.totalSks > 20 ? 'bg-success' : mahasiswa.totalSks > 15 ? 'bg-warning' : 'bg-secondary' }}" 
+                                 style="width: {{ (mahasiswa.totalSks / 24) * 100 }}%"></div>
+                          </div>
+                          <small class="text-muted">{{ Math.round((mahasiswa.totalSks / 24) * 100) }}% dari 24 SKS</small>
+                        </td>
+                        <td>
+                          @if(mahasiswa.totalSks >= 20)
+                            <span class="badge bg-success">Optimal</span>
+                          @elseif(mahasiswa.totalSks >= 15)
+                            <span class="badge bg-warning">Normal</span>
+                          @elseif(mahasiswa.totalSks > 0)
+                            <span class="badge bg-secondary">Minimal</span>
+                          @else
+                            <span class="badge bg-danger">Tidak Aktif</span>
+                          @endif
+                        </td>
+                      </tr>
+                    @endeach
+                  </tbody>
+                </table>
+              </div>
+            @else
+              <div class="text-center py-5">
+                <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Tidak ada data</h5>
+                <p class="text-muted">Tidak ada mahasiswa yang sesuai dengan filter yang dipilih.</p>
+              </div>
+            @endif
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
